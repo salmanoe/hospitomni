@@ -1,7 +1,7 @@
 /*
  * Availability + restrictions storage; range compression; partial-update
- * merge. High-volume set-shaped path: JdbcTemplate batch SQL, no JPA
- * (PLAN.md decision "Persistence split by workload").
+ * merge. High-volume set-shaped path: JdbcTemplate batch SQL, no JPA —
+ * persistence is split by workload.
  *
  * @author Salman
  * @version 1.0

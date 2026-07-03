@@ -1,6 +1,6 @@
 /*
  * HospitOmni — Gradle settings: one deployable module (bootstrap) plus
- * bounded-context libraries (see PLAN.md architecture section).
+ * bounded-context libraries.
  *
  * @author Salman
  * @version 1.0

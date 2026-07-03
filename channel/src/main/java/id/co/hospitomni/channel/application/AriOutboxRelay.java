@@ -30,7 +30,7 @@ public class AriOutboxRelay {
     private final DirtyCellStore dirtyCellStore;
     private final RelayProperties properties;
     // Plain virtual-thread fan-out — StructuredTaskScope is still preview on
-    // Java 25 (PLAN.md decision "No preview APIs in production").
+    // Java 25, and preview APIs stay out of production code.
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public AriOutboxRelay(RelayWorker worker, DirtyCellStore dirtyCellStore, RelayProperties properties) {

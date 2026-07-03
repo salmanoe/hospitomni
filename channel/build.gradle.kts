@@ -1,7 +1,7 @@
 /*
  * OTA adapter seam + outbox relay: OtaAdapterPort + registry, dirty-cell
  * writer (same-tx event listener), scheduled relay with SKIP LOCKED claims,
- * MockOtaAdapter first (PLAN.md build step 4).
+ * MockOtaAdapter first.
  *
  * @author Salman
  * @version 1.0

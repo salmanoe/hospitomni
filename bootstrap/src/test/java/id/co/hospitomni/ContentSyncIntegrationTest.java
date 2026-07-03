@@ -1,5 +1,5 @@
 /*
- * PLAN.md build step 2 DoD: content CRUD with HospitOmni-assigned UUIDs,
+ * Content CRUD with HospitOmni-assigned UUIDs,
  * verified by readback equality — create property → room type → rate plan,
  * read each back and compare. Runs against Testcontainers Postgres 18 with
  * the local-profile seeded key.

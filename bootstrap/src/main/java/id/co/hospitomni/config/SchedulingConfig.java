@@ -1,6 +1,6 @@
 /*
  * Enables @Scheduled pollers (the ARI outbox relay; the booking-feed
- * machinery arrives in step 5).
+ * machinery arrives with the inbound booking loop).
  *
  * @author Salman
  * @version 1.0

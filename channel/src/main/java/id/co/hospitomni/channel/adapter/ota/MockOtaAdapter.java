@@ -1,8 +1,8 @@
 /*
  * Simulates an OTA: accepts ARI pushes and stores them in memory so a
- * readback can verify receipt (PLAN.md step 4), with a fail-next hook to
- * exercise the relay's retry/backoff path. Step 5 adds the booking-injection
- * hook that closes the inbound loop.
+ * readback can verify receipt, with a fail-next hook to exercise the
+ * relay's retry/backoff path. The inbound booking loop later adds a
+ * booking-injection hook here.
  *
  * @author Salman
  * @version 1.0

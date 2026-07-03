@@ -1,7 +1,6 @@
 /*
  * POST /api/v1/restrictions (bulk partial-update write) and
- * GET /api/v1/restrictions (range-compressed read with ?fields= projection)
- * — PLAN.md build step 3.
+ * GET /api/v1/restrictions (range-compressed read with ?fields= projection).
  *
  * @author Salman
  * @version 1.0

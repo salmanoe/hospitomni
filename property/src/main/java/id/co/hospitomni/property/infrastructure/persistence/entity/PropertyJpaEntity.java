@@ -1,6 +1,5 @@
 /*
- * Maps the `property` table. Read-only in step 1; mutators arrive with the
- * content-sync use cases (build step 2).
+ * Maps the `property` table.
  *
  * @author Salman
  * @version 1.0

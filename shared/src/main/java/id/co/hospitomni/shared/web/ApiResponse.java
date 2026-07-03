@@ -1,7 +1,6 @@
 /*
  * Uniform success envelope: {success, message, data, timestamp}
- * (mirrors HospitOps). Errors use RFC 9457 Problem Details instead —
- * see PLAN.md north-side contract.
+ * (mirrors HospitOps). Errors use RFC 9457 Problem Details instead.
  *
  * @author Salman
  * @version 1.0

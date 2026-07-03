@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- V2__room_type_rate_plan.sql — PLAN.md build step 2 content schema.
+-- V2__room_type_rate_plan.sql — room-type / rate-plan content schema.
 --
 -- Channex-compatible content resources. HospitOmni owns these UUIDs;
 -- the PMS stores them as external ids in its channel mappings.

@@ -1,7 +1,6 @@
 /*
  * The ONLY deployable module — assembles every bounded context into the
- * runnable Spring Boot application (JVM, not native — PLAN.md deviation
- * from HospitOps).
+ * runnable Spring Boot application (JVM, not native).
  *
  * @author Salman
  * @version 1.0
@@ -31,8 +30,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.flywaydb:flyway-database-postgresql")
 
-    // OpenAPI published from the code (PLAN.md north-side contract);
-    // 3.x is the Spring Boot 4 line.
+    // OpenAPI published from the code; 3.x is the Spring Boot 4 line.
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.3")
 
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")

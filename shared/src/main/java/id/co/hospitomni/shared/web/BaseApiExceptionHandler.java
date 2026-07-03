@@ -1,5 +1,5 @@
 /*
- * Maps shared exceptions to RFC 9457 Problem Details (PLAN.md contract).
+ * Maps shared exceptions to RFC 9457 Problem Details.
  * Success responses use ApiResponse; every error is application/problem+json.
  *
  * @author Salman

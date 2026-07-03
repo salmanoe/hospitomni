@@ -1,5 +1,5 @@
 # Local dev services — consumed by spring-boot-docker-compose on bootRun.
-# Postgres pinned to 18 (PLAN.md decision log 2026-07-02).
+# Postgres pinned to 18.
 #
 # @author Salman
 # @version 1.0

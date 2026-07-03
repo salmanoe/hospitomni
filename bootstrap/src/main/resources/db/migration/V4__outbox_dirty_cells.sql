@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- V4__outbox_dirty_cells.sql — PLAN.md build step 4 outbox schema.
+-- V4__outbox_dirty_cells.sql — ARI dirty-cell outbox schema.
 --
 -- Dirty-cell outbox: ARI writes mark (channel, unit, date) cells dirty in
 -- the SAME transaction as the write; the relay claims them with

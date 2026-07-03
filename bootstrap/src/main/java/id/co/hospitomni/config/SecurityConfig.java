@@ -1,7 +1,7 @@
 /*
  * API-key security: stateless, CSRF off (no browser session to ride),
  * actuator health open, everything else requires a resolved account.
- * 401s are RFC 9457 Problem Details (PLAN.md north-side contract).
+ * 401s are RFC 9457 Problem Details.
  *
  * @author Salman
  * @version 1.0

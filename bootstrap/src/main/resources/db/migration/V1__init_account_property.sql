@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- V1__init_account_property.sql — PLAN.md build step 1 schema.
+-- V1__init_account_property.sql — accounts, API keys, properties, channels.
 --
 -- Design notes:
 --   - Flyway owns all DDL; JPA runs ddl-auto=validate only.
@@ -51,7 +51,7 @@ CREATE TABLE property
     title      VARCHAR(200)  NOT NULL,
     currency   VARCHAR(3)       NOT NULL DEFAULT 'IDR',
     -- IANA zone id (e.g. 'Asia/Jakarta'). Business dates are
-    -- hotel-local — WIB, not server/UTC (PLAN.md step 1 anchor).
+    -- hotel-local — WIB, not server/UTC.
     timezone   VARCHAR(64)   NOT NULL,
     created_at TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ   NOT NULL DEFAULT NOW()
@@ -59,7 +59,7 @@ CREATE TABLE property
 
 CREATE INDEX idx_property_account ON property (account_id);
 
--- ── MODULE: channel (mapping shell — adapters arrive in step 4) ─
+-- ── MODULE: channel (mapping shell — OTA adapters arrive later) ─
 CREATE TABLE property_channel
 (
     id                     UUID PRIMARY KEY      DEFAULT gen_random_uuid(),

@@ -1,7 +1,7 @@
 /*
  * Property content use cases — create/update/read, scoped to the account
- * bound on the current request. HospitOmni assigns and owns the UUIDs
- * (PLAN.md: "assign + persist UUIDs; idempotent upsert").
+ * bound on the current request. HospitOmni assigns and owns the UUIDs;
+ * upserts are idempotent.
  *
  * @author Salman
  * @version 1.0

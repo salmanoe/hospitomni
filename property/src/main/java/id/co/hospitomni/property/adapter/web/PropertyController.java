@@ -1,7 +1,6 @@
 /*
  * Property content endpoints (Channex-shaped). GET list doubles as the
- * "verify the key" call (PLAN.md step 1 DoD); POST/PUT assign and update
- * HospitOmni-owned UUIDs (step 2).
+ * "verify the key" call; POST/PUT assign and update HospitOmni-owned UUIDs.
  *
  * @author Salman
  * @version 1.0

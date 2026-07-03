@@ -1,6 +1,6 @@
 /*
  * POST /api/v1/availability (bulk write) and GET /api/v1/availability
- * (range-compressed read) — PLAN.md build step 3.
+ * (range-compressed read).
  *
  * @author Salman
  * @version 1.0

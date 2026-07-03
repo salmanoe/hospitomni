@@ -1,6 +1,6 @@
 /*
  * Local-profile seed: one account, one API key, one property — enough to
- * verify the PLAN.md step 1 DoD (GET /properties → 200 for a seeded key).
+ * verify the auth chain (GET /properties → 200 for a seeded key).
  * Idempotent (ON CONFLICT DO NOTHING); never active outside the `local`
  * profile, so no fixed credential ever reaches a real environment.
  *

@@ -1,6 +1,6 @@
 /**
  * Batch SQL adapters (JdbcTemplate) for the high-volume ARI path — no JPA
- * by design (PLAN.md "Persistence split by workload").
+ * by design (persistence is split by workload).
  *
  * @author Salman
  * @version 1.0

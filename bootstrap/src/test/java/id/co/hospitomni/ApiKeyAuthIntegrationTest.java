@@ -1,5 +1,5 @@
 /*
- * PLAN.md build step 1 DoD, end to end against Testcontainers Postgres 18:
+ * Account auth end to end against Testcontainers Postgres 18:
  * no key → 401 Problem Details; seeded key → 200 with the seeded property;
  * actuator health open. Runs the `local` profile so DevDataSeeder provides
  * the seeded account/key/property (verifying the seeder too).

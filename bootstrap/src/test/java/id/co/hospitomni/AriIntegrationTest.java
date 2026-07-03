@@ -1,5 +1,5 @@
 /*
- * PLAN.md build step 3 DoD: /availability + /restrictions write/read with
+ * /availability + /restrictions write/read with
  * range compression + partial updates, verified by readback equality against
  * Testcontainers Postgres 18.
  *

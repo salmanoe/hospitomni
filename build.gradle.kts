@@ -2,8 +2,7 @@
  * HospitOmni root build — Gradle Kotlin DSL multi-module.
  *
  * Java 25 LTS toolchain · Spring Boot 4.1.0 BOM · JVM (not native) ·
- * no Lombok/MapStruct (records + JSpecify @NullMarked instead — see
- * PLAN.md decision log 2026-07-02).
+ * no Lombok/MapStruct (records + JSpecify @NullMarked instead).
  *
  * @author Salman
  * @version 1.0

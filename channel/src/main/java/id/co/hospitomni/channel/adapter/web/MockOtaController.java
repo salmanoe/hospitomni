@@ -1,6 +1,6 @@
 /*
  * Readback + failure-injection hooks on the mock OTA — the verification
- * surface for PLAN.md step 4 ("readback on the mock confirms receipt").
+ * surface that proves pushes were received.
  * Profile-gated: exists only in local/test, never in production.
  *
  * @author Salman

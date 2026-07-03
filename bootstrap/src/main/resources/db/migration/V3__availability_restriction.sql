@@ -1,9 +1,9 @@
 -- ═══════════════════════════════════════════════════════════════
--- V3__availability_restriction.sql — PLAN.md build step 3 ARI storage.
+-- V3__availability_restriction.sql — ARI day-cell storage.
 --
 -- Set-shaped, high-volume tables written via batch SQL
--- (INSERT … ON CONFLICT DO UPDATE), not JPA — see decision log
--- "Persistence split by workload". One row per day-cell; reads are
+-- (INSERT … ON CONFLICT DO UPDATE), not JPA — persistence is split by
+-- workload. One row per day-cell; reads are
 -- range-compressed in the application layer.
 --
 -- property_id is denormalized onto both tables: every Channex-shaped

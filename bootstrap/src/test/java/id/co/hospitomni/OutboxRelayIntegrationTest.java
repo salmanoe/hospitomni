@@ -1,5 +1,5 @@
 /*
- * PLAN.md build step 4 DoD: ARI writes fan out through the dirty-cell outbox
+ * End-to-end outbox proof: ARI writes fan out through the dirty-cell outbox
  * to the MockOtaAdapter; readback on the mock confirms receipt. Also proves
  * the paused kill switch and the retry-after-failure path. Relay tick and
  * backoff are shortened via test properties.
