@@ -102,6 +102,19 @@ class ContentSyncIntegrationTest {
     }
 
     @Test
+    void validationFailureIs400ProblemDetailNot401() {
+        // Regression pin: MethodArgumentNotValidException used to re-dispatch
+        // to the protected /error route and surface as a misleading 401.
+        ResponseEntity<String> response = rest.exchange(
+                "/api/v1/properties", HttpMethod.POST,
+                entity("""
+                        {"title":"","currency":"IDR","timezone":"Asia/Jakarta"}"""),
+                String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(String.valueOf(response.getBody()).contains("title"));
+    }
+
+    @Test
     void openApiSpecIsPublishedAndCoversContentEndpoints() throws Exception {
         ResponseEntity<String> response = rest.getForEntity("/v3/api-docs", String.class);
         assertEquals(HttpStatus.OK, response.getStatusCode());

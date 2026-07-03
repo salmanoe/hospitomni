@@ -34,6 +34,9 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health/**", "/actuator/health").permitAll()
                         // Published contract — HospitOps generates its client from this.
                         .requestMatchers("/v3/api-docs/**").permitAll()
+                        // Boot's error re-dispatch target; without this, any
+                        // unhandled exception surfaces as a misleading 401.
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(handling ->
