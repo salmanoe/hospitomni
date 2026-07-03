@@ -20,7 +20,9 @@ import id.co.hospitomni.shared.AccountContext;
 import id.co.hospitomni.shared.AccountId;
 import id.co.hospitomni.shared.Guard;
 import id.co.hospitomni.shared.PropertyId;
+import id.co.hospitomni.shared.event.AriChangedEvent;
 import id.co.hospitomni.shared.exception.ResourceNotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,14 +36,17 @@ public class AriWriteService {
     private final AvailabilityStore availabilityStore;
     private final RestrictionStore restrictionStore;
     private final ContentCatalog contentCatalog;
+    private final ApplicationEventPublisher eventPublisher;
 
     public AriWriteService(
             AvailabilityStore availabilityStore,
             RestrictionStore restrictionStore,
-            ContentCatalog contentCatalog) {
+            ContentCatalog contentCatalog,
+            ApplicationEventPublisher eventPublisher) {
         this.availabilityStore = availabilityStore;
         this.restrictionStore = restrictionStore;
         this.contentCatalog = contentCatalog;
+        this.eventPublisher = eventPublisher;
     }
 
     /** Returns the number of day-cells written. */
@@ -65,6 +70,11 @@ public class AriWriteService {
                                 value.propertyId(), value.roomTypeId(), day, value.availability())))
                 .toList();
         availabilityStore.upsert(cells);
+        // Same-transaction events: the channel module marks dirty outbox
+        // cells atomically with this write.
+        values.forEach(value -> eventPublisher.publishEvent(new AriChangedEvent(
+                value.propertyId(), AriChangedEvent.Unit.AVAILABILITY,
+                value.roomTypeId().value(), value.span().from(), value.span().to())));
         return cells.size();
     }
 
@@ -91,6 +101,9 @@ public class AriWriteService {
                                 value.propertyId(), value.ratePlanId(), day, value.fields())))
                 .toList();
         restrictionStore.upsertMerge(cells);
+        values.forEach(value -> eventPublisher.publishEvent(new AriChangedEvent(
+                value.propertyId(), AriChangedEvent.Unit.RESTRICTION,
+                value.ratePlanId().value(), value.span().from(), value.span().to())));
         return cells.size();
     }
 

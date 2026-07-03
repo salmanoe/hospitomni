@@ -51,6 +51,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-resttestclient")
     testImplementation("org.springframework.boot:spring-boot-restclient")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    // Async assertions for the outbox-relay tests (version via Boot BOM).
+    testImplementation("org.awaitility:awaitility")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
 }

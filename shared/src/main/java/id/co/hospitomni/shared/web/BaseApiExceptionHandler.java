@@ -9,6 +9,7 @@
 package id.co.hospitomni.shared.web;
 
 import id.co.hospitomni.shared.exception.ResourceNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -36,6 +37,14 @@ public class BaseApiExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         problem.setTitle("Not Found");
         problem.setDetail(e.getMessage());
+        return problem;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ProblemDetail handleConflict(DataIntegrityViolationException e) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+        problem.setTitle("Conflict");
+        problem.setDetail("The request conflicts with existing data (duplicate or referenced resource).");
         return problem;
     }
 

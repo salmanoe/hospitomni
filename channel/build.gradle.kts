@@ -1,5 +1,7 @@
 /*
- * OTA adapter seam: OtaAdapterPort + registry; MockOtaAdapter first.
+ * OTA adapter seam + outbox relay: OtaAdapterPort + registry, dirty-cell
+ * writer (same-tx event listener), scheduled relay with SKIP LOCKED claims,
+ * MockOtaAdapter first (PLAN.md build step 4).
  *
  * @author Salman
  * @version 1.0
@@ -8,4 +10,7 @@
 
 dependencies {
     api(project(":shared"))
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 }

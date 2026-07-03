@@ -1,13 +1,13 @@
 /*
  * Collapses per-day cells into inclusive date ranges: a run continues while
- * dates are consecutive and the value is equal. Input must be sorted by date
+ * dates are consecutive and the value is equal. Kernel utility (ari reads, channel relay pushes). Input must be sorted by date
  * within one key (room type / rate plan) — the caller groups per key.
  *
  * @author Salman
  * @version 1.0
  * @since 2026-07-03
  */
-package id.co.hospitomni.ari.domain.model;
+package id.co.hospitomni.shared;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

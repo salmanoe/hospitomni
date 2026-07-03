@@ -12,7 +12,7 @@
 package id.co.hospitomni.ari.application;
 
 import id.co.hospitomni.ari.domain.model.AvailabilityCell;
-import id.co.hospitomni.ari.domain.model.RangeCompressor;
+import id.co.hospitomni.shared.RangeCompressor;
 import id.co.hospitomni.ari.domain.model.RestrictionCell;
 import id.co.hospitomni.ari.domain.model.RestrictionFields;
 import id.co.hospitomni.ari.domain.port.out.AvailabilityStore;

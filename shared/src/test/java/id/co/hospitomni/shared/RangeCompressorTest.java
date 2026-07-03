@@ -5,9 +5,8 @@
  * @version 1.0
  * @since 2026-07-03
  */
-package id.co.hospitomni.ari.domain;
+package id.co.hospitomni.shared;
 
-import id.co.hospitomni.ari.domain.model.RangeCompressor;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
