@@ -1,0 +1,21 @@
+# Local dev services — consumed by spring-boot-docker-compose on bootRun.
+# Postgres pinned to 18 (PLAN.md decision log 2026-07-02).
+#
+# @author Salman
+# @version 1.0
+# @since 2026-07-03
+
+services:
+  postgres:
+    image: 'postgres:18'
+    environment:
+      - 'POSTGRES_DB=hospitomni'
+      - 'POSTGRES_USER=hospitomni'
+      - 'POSTGRES_PASSWORD=hospitomni'
+    ports:
+      - '5432'
+    volumes:
+      - 'postgres-data:/var/lib/postgresql'
+
+volumes:
+  postgres-data:

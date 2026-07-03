@@ -1,0 +1,9 @@
+# HospitOmni application configuration (bootstrap module).
+#
+# @author Salman
+# @version 1.0
+# @since 2026-07-03
+
+spring:
+  application:
+    name: hospitomni
