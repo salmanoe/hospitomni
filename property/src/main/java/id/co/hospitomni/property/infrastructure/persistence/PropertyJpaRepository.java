@@ -11,9 +11,12 @@ import id.co.hospitomni.property.infrastructure.persistence.entity.PropertyJpaEn
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface PropertyJpaRepository extends JpaRepository<PropertyJpaEntity, UUID> {
 
     List<PropertyJpaEntity> findAllByAccountIdOrderByTitle(UUID accountId);
+
+    Optional<PropertyJpaEntity> findByIdAndAccountId(UUID id, UUID accountId);
 }

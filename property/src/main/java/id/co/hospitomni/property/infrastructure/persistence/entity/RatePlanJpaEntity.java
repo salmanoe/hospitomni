@@ -1,6 +1,5 @@
 /*
- * Maps the `property` table. Read-only in step 1; mutators arrive with the
- * content-sync use cases (build step 2).
+ * Maps the `rate_plan` table.
  *
  * @author Salman
  * @version 1.0
@@ -19,14 +18,17 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "property")
-public class PropertyJpaEntity {
+@Table(name = "rate_plan")
+public class RatePlanJpaEntity {
 
     @Id
     private @Nullable UUID id;
 
-    @Column(name = "account_id", nullable = false)
-    private @Nullable UUID accountId;
+    @Column(name = "property_id", nullable = false)
+    private @Nullable UUID propertyId;
+
+    @Column(name = "room_type_id", nullable = false)
+    private @Nullable UUID roomTypeId;
 
     @Column(nullable = false, length = 200)
     private @Nullable String title;
@@ -34,30 +36,27 @@ public class PropertyJpaEntity {
     @Column(nullable = false, length = 3)
     private @Nullable String currency;
 
-    @Column(nullable = false, length = 64)
-    private @Nullable String timezone;
-
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private @Nullable Instant createdAt;
 
     @Column(name = "updated_at", nullable = false, insertable = false)
     private @Nullable Instant updatedAt;
 
-    protected PropertyJpaEntity() {} // JPA only
+    protected RatePlanJpaEntity() {} // JPA only
 
-    public PropertyJpaEntity(UUID id, UUID accountId, String title, String currency, String timezone) {
+    public RatePlanJpaEntity(UUID id, UUID propertyId, UUID roomTypeId, String title, String currency) {
         this.id = id;
-        this.accountId = accountId;
+        this.propertyId = propertyId;
+        this.roomTypeId = roomTypeId;
         this.title = title;
         this.currency = currency;
-        this.timezone = timezone;
     }
 
-    /** Content update; identity (id, accountId) is immutable. */
-    public void updateContent(String title, String currency, String timezone) {
+    /** Content update; identity (id, propertyId) is immutable, room type may repoint. */
+    public void updateContent(UUID roomTypeId, String title, String currency) {
+        this.roomTypeId = roomTypeId;
         this.title = title;
         this.currency = currency;
-        this.timezone = timezone;
         this.updatedAt = Instant.now();
     }
 
@@ -65,8 +64,12 @@ public class PropertyJpaEntity {
         return Objects.requireNonNull(id);
     }
 
-    public UUID accountId() {
-        return Objects.requireNonNull(accountId);
+    public UUID propertyId() {
+        return Objects.requireNonNull(propertyId);
+    }
+
+    public UUID roomTypeId() {
+        return Objects.requireNonNull(roomTypeId);
     }
 
     public String title() {
@@ -75,9 +78,5 @@ public class PropertyJpaEntity {
 
     public String currency() {
         return Objects.requireNonNull(currency);
-    }
-
-    public String timezone() {
-        return Objects.requireNonNull(timezone);
     }
 }

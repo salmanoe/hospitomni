@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.time.ZoneId;
 import java.util.Currency;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class PropertyRepositoryAdapter implements PropertyRepository {
@@ -25,6 +26,26 @@ public class PropertyRepositoryAdapter implements PropertyRepository {
 
     public PropertyRepositoryAdapter(PropertyJpaRepository jpa) {
         this.jpa = jpa;
+    }
+
+    @Override
+    public Property save(Property property) {
+        PropertyJpaEntity entity = jpa.findById(property.id().value())
+                .map(existing -> {
+                    existing.updateContent(property.title(),
+                            property.currency().getCurrencyCode(), property.timezone().getId());
+                    return existing;
+                })
+                .orElseGet(() -> new PropertyJpaEntity(
+                        property.id().value(), property.accountId().value(), property.title(),
+                        property.currency().getCurrencyCode(), property.timezone().getId()));
+        return toDomain(jpa.save(entity));
+    }
+
+    @Override
+    public Optional<Property> findByIdAndAccount(PropertyId id, AccountId accountId) {
+        return jpa.findByIdAndAccountId(id.value(), accountId.value())
+                .map(PropertyRepositoryAdapter::toDomain);
     }
 
     @Override
