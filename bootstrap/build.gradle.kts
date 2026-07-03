@@ -42,6 +42,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    // TestRestTemplate's new home in Boot 4's modular test split; its
+    // auto-configuration builds on RestTemplateBuilder from spring-boot-restclient.
+    testImplementation("org.springframework.boot:spring-boot-resttestclient")
+    testImplementation("org.springframework.boot:spring-boot-restclient")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
@@ -49,4 +53,9 @@ dependencies {
 
 springBoot {
     mainClass.set("id.co.hospitomni.HospitomniApplication")
+}
+
+// Run from the repo root so spring-boot-docker-compose finds ./compose.yaml.
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    workingDir = rootProject.projectDir
 }
