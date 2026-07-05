@@ -11,6 +11,7 @@ package id.co.hospitomni;
 
 import id.co.hospitomni.config.ApiKeyAuthFilter;
 import id.co.hospitomni.config.DevDataSeeder;
+import id.co.hospitomni.config.IdempotencyFilter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -197,6 +200,7 @@ class AriIntegrationTest {
         headers.set(ApiKeyAuthFilter.API_KEY_HEADER, DevDataSeeder.DEV_RAW_KEY);
         if (json != null) {
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set(IdempotencyFilter.IDEMPOTENCY_KEY_HEADER, UUID.randomUUID().toString());
         }
         return new HttpEntity<>(json, headers);
     }

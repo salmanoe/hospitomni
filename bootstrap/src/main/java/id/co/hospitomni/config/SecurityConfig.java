@@ -24,7 +24,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, ApiKeyAuthFilter apiKeyAuthFilter)
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http, ApiKeyAuthFilter apiKeyAuthFilter, IdempotencyFilter idempotencyFilter)
             throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
@@ -39,6 +40,9 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                // After the auth filter: runs inside its account scope, and an
+                // unauthenticated write must 401 before any Idempotency-Key 400.
+                .addFilterAfter(idempotencyFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(handling ->
                         handling.authenticationEntryPoint(problemDetailsEntryPoint()))
                 .build();

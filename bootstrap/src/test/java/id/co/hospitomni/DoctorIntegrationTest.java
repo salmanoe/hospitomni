@@ -12,6 +12,7 @@ package id.co.hospitomni;
 
 import id.co.hospitomni.config.ApiKeyAuthFilter;
 import id.co.hospitomni.config.DevDataSeeder;
+import id.co.hospitomni.config.IdempotencyFilter;
 import id.co.hospitomni.doctor.Doctor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -204,6 +206,7 @@ class DoctorIntegrationTest {
         headers.set(ApiKeyAuthFilter.API_KEY_HEADER, DevDataSeeder.DEV_RAW_KEY);
         if (json != null) {
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set(IdempotencyFilter.IDEMPOTENCY_KEY_HEADER, UUID.randomUUID().toString());
         }
         return new HttpEntity<>(json, headers);
     }
