@@ -24,12 +24,17 @@ import java.util.UUID;
 @Repository
 public class PropertyChannelJdbcRepository implements PropertyChannelRepository {
 
+    private static final String CHANNEL_COLUMNS =
+            "id, property_id, ota_name, paused, epoch, "
+                    + "credentials_ciphertext IS NOT NULL AS has_credentials";
+
     private static final RowMapper<PropertyChannel> MAPPER = (rs, i) -> new PropertyChannel(
             PropertyChannelId.of(rs.getObject("id", UUID.class)),
             PropertyId.of(rs.getObject("property_id", UUID.class)),
             rs.getString("ota_name"),
             rs.getBoolean("paused"),
-            rs.getLong("epoch"));
+            rs.getLong("epoch"),
+            rs.getBoolean("has_credentials"));
 
     private final JdbcTemplate jdbc;
 
@@ -42,13 +47,13 @@ public class PropertyChannelJdbcRepository implements PropertyChannelRepository 
         PropertyChannelId id = PropertyChannelId.generate();
         jdbc.update("INSERT INTO property_channel (id, property_id, ota_name) VALUES (?, ?, ?)",
                 id.value(), propertyId.value(), otaName);
-        return new PropertyChannel(id, propertyId, otaName, false, 0);
+        return new PropertyChannel(id, propertyId, otaName, false, 0, false);
     }
 
     @Override
     public Optional<PropertyChannel> findById(PropertyChannelId id) {
         return jdbc.query(
-                        "SELECT id, property_id, ota_name, paused, epoch FROM property_channel WHERE id = ?",
+                        "SELECT " + CHANNEL_COLUMNS + " FROM property_channel WHERE id = ?",
                         MAPPER, id.value())
                 .stream().findFirst();
     }
@@ -56,7 +61,7 @@ public class PropertyChannelJdbcRepository implements PropertyChannelRepository 
     @Override
     public List<PropertyChannel> findAllByProperty(PropertyId propertyId) {
         return jdbc.query(
-                "SELECT id, property_id, ota_name, paused, epoch FROM property_channel "
+                "SELECT " + CHANNEL_COLUMNS + " FROM property_channel "
                         + "WHERE property_id = ? ORDER BY ota_name",
                 MAPPER, propertyId.value());
     }
@@ -97,7 +102,7 @@ public class PropertyChannelJdbcRepository implements PropertyChannelRepository 
     @Override
     public List<PropertyChannel> findAllUnpaused() {
         return jdbc.query(
-                "SELECT id, property_id, ota_name, paused, epoch FROM property_channel "
+                "SELECT " + CHANNEL_COLUMNS + " FROM property_channel "
                         + "WHERE NOT paused ORDER BY id",
                 MAPPER);
     }

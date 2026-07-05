@@ -18,7 +18,8 @@ public record PropertyChannel(
         PropertyId propertyId,
         String otaName,
         boolean paused,
-        long epoch) {
+        long epoch,
+        boolean hasCredentials) {
 
     public PropertyChannel {
         Guard.notNull(id, "id");

@@ -1,8 +1,17 @@
 # HospitOmni application configuration (bootstrap module).
 #
 # @author Salman
-# @version 1.0
+# @version 1.1
 # @since 2026-07-03
+
+hospitomni:
+  security:
+    # AES-256 key for secrets at rest (base64, exactly 32 bytes decoded).
+    # The inline fallback is a DEV-ONLY convenience so the local profile
+    # boots without setup — every real environment MUST supply
+    # HOSPITOMNI_SECRET_KEY (and rotate secret-key-id with it).
+    secret-key: ${HOSPITOMNI_SECRET_KEY:aG9zcGl0b21uaS1kZXYtc2VjcmV0LTMyLWJ5dGVzISE=}
+    secret-key-id: ${HOSPITOMNI_SECRET_KEY_ID:dev-1}
 
 spring:
   application:
