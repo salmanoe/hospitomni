@@ -28,6 +28,12 @@ public interface PropertyChannelRepository {
 
     void setPaused(PropertyChannelId id, boolean paused);
 
+    /** Successful push unit: stamp last_push_at, clear any previous error. */
+    void recordPushSuccess(PropertyChannelId id);
+
+    /** Failed push unit: record the message; last_push_at stays as it was. */
+    void recordPushError(PropertyChannelId id, String error);
+
     /** Tenant guard — channel web endpoints validate through this. */
     boolean propertyOwnedBy(PropertyId propertyId, AccountId accountId);
 }

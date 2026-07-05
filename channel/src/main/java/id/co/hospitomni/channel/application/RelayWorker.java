@@ -71,6 +71,7 @@ public class RelayWorker {
             adapterRegistry.byName(channel.otaName()).pushAri(push);
         }
         dirtyCellStore.delete(claimed);
+        channelRepository.recordPushSuccess(channelId);
         log.debug("Pushed {} availability + {} restriction range(s) to {} for property {}",
                 push.availability().size(), push.restrictions().size(),
                 channel.otaName(), channel.propertyId().value());

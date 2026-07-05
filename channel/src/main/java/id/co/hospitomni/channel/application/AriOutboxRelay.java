@@ -11,6 +11,7 @@
 package id.co.hospitomni.channel.application;
 
 import id.co.hospitomni.channel.domain.port.out.DirtyCellStore;
+import id.co.hospitomni.channel.domain.port.out.PropertyChannelRepository;
 import id.co.hospitomni.shared.PropertyChannelId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +29,20 @@ public class AriOutboxRelay {
 
     private final RelayWorker worker;
     private final DirtyCellStore dirtyCellStore;
+    private final PropertyChannelRepository channelRepository;
     private final RelayProperties properties;
     // Plain virtual-thread fan-out — StructuredTaskScope is still preview on
     // Java 25, and preview APIs stay out of production code.
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-    public AriOutboxRelay(RelayWorker worker, DirtyCellStore dirtyCellStore, RelayProperties properties) {
+    public AriOutboxRelay(
+            RelayWorker worker,
+            DirtyCellStore dirtyCellStore,
+            PropertyChannelRepository channelRepository,
+            RelayProperties properties) {
         this.worker = worker;
         this.dirtyCellStore = dirtyCellStore;
+        this.channelRepository = channelRepository;
         this.properties = properties;
     }
 
@@ -64,8 +71,11 @@ public class AriOutboxRelay {
             worker.processChannel(channelId);
         } catch (Exception e) {
             log.warn("Push failed for channel {}: {}", channelId.value(), e.getMessage());
-            dirtyCellStore.recordFailure(channelId, e.getMessage() == null ? e.toString() : e.getMessage(),
+            String error = e.getMessage() == null ? e.toString() : e.getMessage();
+            dirtyCellStore.recordFailure(channelId, error,
                     properties.backoffBaseSeconds(), properties.maxAttempts());
+            // Surface the failure on /sync-status until the next success.
+            channelRepository.recordPushError(channelId, error);
         }
     }
 }

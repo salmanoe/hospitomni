@@ -76,6 +76,18 @@ public class PropertyChannelJdbcRepository implements PropertyChannelRepository 
     }
 
     @Override
+    public void recordPushSuccess(PropertyChannelId id) {
+        jdbc.update("UPDATE property_channel SET last_push_at = NOW(), last_push_error = NULL "
+                + "WHERE id = ?", id.value());
+    }
+
+    @Override
+    public void recordPushError(PropertyChannelId id, String error) {
+        jdbc.update("UPDATE property_channel SET last_push_error = ? WHERE id = ?",
+                error, id.value());
+    }
+
+    @Override
     public boolean propertyOwnedBy(PropertyId propertyId, AccountId accountId) {
         return Boolean.TRUE.equals(jdbc.queryForObject(
                 "SELECT EXISTS(SELECT 1 FROM property WHERE id = ? AND account_id = ?)",

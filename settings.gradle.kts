@@ -30,4 +30,5 @@ include(
     "booking",
     "channel",
     "bootstrap",
+    "doctor",
 )

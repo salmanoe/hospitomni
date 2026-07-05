@@ -37,6 +37,8 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     // ── Test ────────────────────────────────────────────────────────────
+    // The doctor CLI is exercised end-to-end against the booted app.
+    testImplementation(project(":doctor"))
     testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
