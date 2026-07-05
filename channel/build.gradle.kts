@@ -10,6 +10,9 @@
 
 dependencies {
     api(project(":shared"))
+    // Inbound path: OTA adapters turn booking notifications into revisions
+    // via the booking module's ingestion use case.
+    implementation(project(":booking"))
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")

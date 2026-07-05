@@ -1,11 +1,12 @@
 /*
  * Simulates an OTA: accepts ARI pushes and stores them in memory so a
  * readback can verify receipt, with a fail-next hook to exercise the
- * relay's retry/backoff path. The inbound booking loop later adds a
- * booking-injection hook here.
+ * relay's retry/backoff path. The inbound half of the simulation — booking
+ * injection — lives on MockOtaController and feeds the booking module's
+ * ingestion use case.
  *
  * @author Salman
- * @version 1.0
+ * @version 1.1
  * @since 2026-07-03
  */
 package id.co.hospitomni.channel.adapter.ota;
