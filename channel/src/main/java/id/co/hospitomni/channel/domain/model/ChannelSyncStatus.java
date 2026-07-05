@@ -26,7 +26,9 @@ public record ChannelSyncStatus(
         @Nullable String lastPushError,
         long pendingCells,
         @Nullable Instant oldestPendingMarkedAt,
-        long deadLetters) {
+        long deadLetters,
+        @Nullable Instant lastReconciledAt,
+        @Nullable Integer lastDriftCount) {
 
     public ChannelSyncStatus {
         Guard.notNull(channelId, "channelId");

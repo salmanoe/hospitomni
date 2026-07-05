@@ -10,6 +10,7 @@ package id.co.hospitomni.channel.infrastructure.persistence;
 
 import id.co.hospitomni.channel.domain.model.RestrictionValues;
 import id.co.hospitomni.channel.domain.port.out.AriValueReader;
+import id.co.hospitomni.shared.PropertyId;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -60,5 +61,23 @@ public class AriValueJdbcReader implements AriValueReader {
                             rs.getObject("stop_sell", Boolean.class)));
                 });
         return values;
+    }
+
+    @Override
+    public List<UUID> roomTypeIdsOf(PropertyId propertyId) {
+        return unitIdsOf("room_type", propertyId);
+    }
+
+    @Override
+    public List<UUID> ratePlanIdsOf(PropertyId propertyId) {
+        return unitIdsOf("rate_plan", propertyId);
+    }
+
+    private List<UUID> unitIdsOf(String table, PropertyId propertyId) {
+        // Table name comes from the two fixed call sites above, never input.
+        return jdbc.query(
+                "SELECT id FROM " + table + " WHERE property_id = :propertyId ORDER BY id",
+                Map.of("propertyId", propertyId.value()),
+                (rs, i) -> rs.getObject("id", UUID.class));
     }
 }

@@ -58,14 +58,17 @@ public class SyncStatusController {
             @Nullable String lastPushError,
             long pendingCells,
             @Nullable Instant oldestPendingMarkedAt,
-            long deadLetters) {
+            long deadLetters,
+            @Nullable Instant lastReconciledAt,
+            @Nullable Integer lastDriftCount) {
 
         static ChannelStatusBody from(ChannelSyncStatus status) {
             return new ChannelStatusBody(
                     status.channelId(), status.propertyId(), status.otaName(),
                     status.paused(), status.epoch(),
                     status.lastPushAt(), status.lastPushError(),
-                    status.pendingCells(), status.oldestPendingMarkedAt(), status.deadLetters());
+                    status.pendingCells(), status.oldestPendingMarkedAt(), status.deadLetters(),
+                    status.lastReconciledAt(), status.lastDriftCount());
         }
     }
 

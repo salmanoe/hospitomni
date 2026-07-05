@@ -39,6 +39,7 @@ public class SyncStatusJdbc implements SyncStatusReader {
         return jdbc.sql("""
                         SELECT pc.id, pc.property_id, pc.ota_name, pc.paused, pc.epoch,
                                pc.last_push_at, pc.last_push_error,
+                               pc.last_reconciled_at, pc.last_drift_count,
                                COALESCE(pend.pending, 0)  AS pending_cells,
                                pend.oldest_marked_at,
                                COALESCE(dead.letters, 0)  AS dead_letters
@@ -86,7 +87,9 @@ public class SyncStatusJdbc implements SyncStatusReader {
                 rs.getString("last_push_error"),
                 rs.getLong("pending_cells"),
                 instant(rs, "oldest_marked_at"),
-                rs.getLong("dead_letters"));
+                rs.getLong("dead_letters"),
+                instant(rs, "last_reconciled_at"),
+                rs.getObject("last_drift_count", Integer.class));
     }
 
     private static @Nullable Instant instant(ResultSet rs, String column) throws SQLException {

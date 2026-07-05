@@ -93,4 +93,31 @@ public class PropertyChannelJdbcRepository implements PropertyChannelRepository 
                 "SELECT EXISTS(SELECT 1 FROM property WHERE id = ? AND account_id = ?)",
                 Boolean.class, propertyId.value(), accountId.value()));
     }
+
+    @Override
+    public List<PropertyChannel> findAllUnpaused() {
+        return jdbc.query(
+                "SELECT id, property_id, ota_name, paused, epoch FROM property_channel "
+                        + "WHERE NOT paused ORDER BY id",
+                MAPPER);
+    }
+
+    @Override
+    public long bumpEpoch(PropertyChannelId id) {
+        Long epoch = jdbc.queryForObject(
+                "UPDATE property_channel SET epoch = epoch + 1, updated_at = NOW() "
+                        + "WHERE id = ? RETURNING epoch",
+                Long.class, id.value());
+        if (epoch == null) {
+            throw new IllegalStateException("Epoch bump matched no channel: " + id.value());
+        }
+        return epoch;
+    }
+
+    @Override
+    public void recordReconciliation(PropertyChannelId id, int driftCount) {
+        jdbc.update("UPDATE property_channel SET last_reconciled_at = NOW(), "
+                        + "last_drift_count = ? WHERE id = ?",
+                driftCount, id.value());
+    }
 }

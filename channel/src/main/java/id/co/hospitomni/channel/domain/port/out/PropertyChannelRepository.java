@@ -36,4 +36,17 @@ public interface PropertyChannelRepository {
 
     /** Tenant guard — channel web endpoints validate through this. */
     boolean propertyOwnedBy(PropertyId propertyId, AccountId accountId);
+
+    /** All unpaused channels — the scheduled reconciler's work list. */
+    List<PropertyChannel> findAllUnpaused();
+
+    /**
+     * Fences a full refresh: increments the channel epoch and returns the
+     * new value. Pushes built before the bump carry the old epoch and are
+     * dropped at delivery.
+     */
+    long bumpEpoch(PropertyChannelId id);
+
+    /** Stamp the reconciliation outcome shown on /sync-status. */
+    void recordReconciliation(PropertyChannelId id, int driftCount);
 }
