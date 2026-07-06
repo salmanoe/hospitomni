@@ -32,7 +32,20 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("HospitOmni North API")
-                        .description("Channex-shaped channel-manager API consumed by HospitOps.")
+                        .description("""
+                                Channex-shaped channel-manager API consumed by HospitOps.
+
+                                Booking events: `GET /booking-events` is the authoritative, \
+                                replayable cursor stream. Registered webhooks (`POST /webhooks`) \
+                                are the low-latency fast path: each delivery POSTs \
+                                `{"events":[...]}` with headers `X-Hospitomni-Timestamp` (epoch \
+                                seconds) and `X-Hospitomni-Signature: v1=<hex>`, where the \
+                                signature is HMAC-SHA256 over `<timestamp>.<raw body bytes>` \
+                                keyed with the `whsec_...` secret returned once at registration. \
+                                Verify over the raw bytes with a constant-time compare, reject \
+                                stale timestamps, dedupe by `seq` (delivery is at-least-once), \
+                                and fall back to polling on any verification failure — webhook \
+                                loss is never data loss.""")
                         .version("v1"))
                 .components(new Components().addSecuritySchemes(API_KEY_SCHEME,
                         new SecurityScheme()
