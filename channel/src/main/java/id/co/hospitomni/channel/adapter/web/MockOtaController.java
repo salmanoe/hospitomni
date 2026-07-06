@@ -8,7 +8,7 @@
  * Profile-gated: exists only in local/test, never in production.
  *
  * @author Salman
- * @version 1.1
+ * @version 1.2
  * @since 2026-07-03
  */
 package id.co.hospitomni.channel.adapter.web;
@@ -55,6 +55,13 @@ import java.util.UUID;
 public class MockOtaController {
 
     public record FailNextRequest(@NotNull @Min(1) Integer count) {
+    }
+
+    public record RateLimitNextRequest(
+            @NotNull @Min(1) Integer count, @NotNull @Min(1) Long retryAfterSeconds) {
+    }
+
+    public record LatencyRequest(@NotNull @Min(0) Long millis) {
     }
 
     private final MockOtaAdapter mockOtaAdapter;
@@ -140,6 +147,23 @@ public class MockOtaController {
     public ApiResponse<Map<String, Integer>> failNext(@Valid @RequestBody FailNextRequest request) {
         mockOtaAdapter.failNext(request.count());
         return ApiResponse.ok(Map.of("failing_next", request.count()));
+    }
+
+    /** The next {@code count} pushes answer 429-shaped throttling. */
+    @PostMapping("/rate-limit-next")
+    public ApiResponse<Map<String, Long>> rateLimitNext(
+            @Valid @RequestBody RateLimitNextRequest request) {
+        mockOtaAdapter.rateLimitNext(request.count(), request.retryAfterSeconds());
+        return ApiResponse.ok(Map.of(
+                "rate_limiting_next", (long) request.count(),
+                "retry_after_seconds", request.retryAfterSeconds()));
+    }
+
+    /** Every subsequent push takes this long — a slow OTA, not a broken one. */
+    @PostMapping("/latency")
+    public ApiResponse<Map<String, Long>> latency(@Valid @RequestBody LatencyRequest request) {
+        mockOtaAdapter.latency(request.millis());
+        return ApiResponse.ok(Map.of("latency_millis", request.millis()));
     }
 
     @DeleteMapping("/pushes")

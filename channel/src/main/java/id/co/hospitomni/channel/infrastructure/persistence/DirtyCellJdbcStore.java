@@ -112,4 +112,13 @@ public class DirtyCellJdbcStore implements DirtyCellStore {
                         WHERE property_channel_id = ? AND next_attempt_at <= NOW()""",
                 backoffBaseSeconds, channelId.value());
     }
+
+    @Override
+    public void recordRateLimited(PropertyChannelId channelId, long retryAfterSeconds) {
+        jdbc.update("""
+                        UPDATE ari_dirty_cell
+                        SET next_attempt_at = NOW() + ? * interval '1 second'
+                        WHERE property_channel_id = ? AND next_attempt_at <= NOW()""",
+                retryAfterSeconds, channelId.value());
+    }
 }

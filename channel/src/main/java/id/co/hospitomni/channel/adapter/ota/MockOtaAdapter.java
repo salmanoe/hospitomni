@@ -1,7 +1,9 @@
 /*
  * Simulates an OTA: accepts ARI pushes and stores them in memory so a
- * readback can verify receipt, with a fail-next hook to exercise the
- * relay's retry/backoff path. The inbound half of the simulation — booking
+ * readback can verify receipt, with hooks for the failure modes real OTAs
+ * exhibit — hard failures (fail-next → retry/backoff/dead-letter),
+ * 429-shaped throttling (rate-limit-next → defer without an attempt), and
+ * slow responses (latency). The inbound half of the simulation — booking
  * injection — lives on MockOtaController and feeds the booking module's
  * ingestion use case.
  *
@@ -13,7 +15,7 @@
  * diffs against.
  *
  * @author Salman
- * @version 1.2
+ * @version 1.3
  * @since 2026-07-03
  */
 package id.co.hospitomni.channel.adapter.ota;
@@ -23,6 +25,7 @@ import id.co.hospitomni.channel.domain.model.OtaAriState;
 import id.co.hospitomni.channel.domain.model.RestrictionValues;
 import id.co.hospitomni.channel.domain.port.out.OtaAdapterPort;
 import id.co.hospitomni.channel.domain.port.out.OtaPushException;
+import id.co.hospitomni.channel.domain.port.out.OtaRateLimitException;
 import id.co.hospitomni.shared.PropertyId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +39,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class MockOtaAdapter implements OtaAdapterPort {
@@ -47,6 +51,9 @@ public class MockOtaAdapter implements OtaAdapterPort {
     private final ConcurrentLinkedQueue<AriPush> received = new ConcurrentLinkedQueue<>();
     private final Map<PropertyId, Long> maxEpochSeen = new ConcurrentHashMap<>();
     private final AtomicInteger failNext = new AtomicInteger();
+    private final AtomicInteger rateLimitNext = new AtomicInteger();
+    private final AtomicLong rateLimitRetryAfterSeconds = new AtomicLong();
+    private final AtomicLong latencyMillis = new AtomicLong();
 
     @Override
     public String otaName() {
@@ -55,6 +62,10 @@ public class MockOtaAdapter implements OtaAdapterPort {
 
     @Override
     public void pushAri(AriPush push) {
+        simulateLatency();
+        if (rateLimitNext.getAndUpdate(n -> n > 0 ? n - 1 : 0) > 0) {
+            throw new OtaRateLimitException(rateLimitRetryAfterSeconds.get());
+        }
         if (failNext.getAndUpdate(n -> n > 0 ? n - 1 : 0) > 0) {
             throw new OtaPushException("Injected mock failure");
         }
@@ -65,6 +76,19 @@ public class MockOtaAdapter implements OtaAdapterPort {
             return;
         }
         received.add(push);
+    }
+
+    private void simulateLatency() {
+        long millis = latencyMillis.get();
+        if (millis <= 0) {
+            return;
+        }
+        try {
+            Thread.sleep(millis); // Virtual threads: a parked push costs nothing.
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new OtaPushException("Interrupted while simulating latency", e);
+        }
     }
 
     @Override
@@ -111,9 +135,23 @@ public class MockOtaAdapter implements OtaAdapterPort {
         failNext.set(count);
     }
 
+    /** Test hook: the next {@code count} pushes answer 429-shaped throttling. */
+    public void rateLimitNext(int count, long retryAfterSeconds) {
+        rateLimitRetryAfterSeconds.set(retryAfterSeconds);
+        rateLimitNext.set(count);
+    }
+
+    /** Test hook: every push takes this long — a slow OTA, not a broken one. */
+    public void latency(long millis) {
+        latencyMillis.set(millis);
+    }
+
     public void clear() {
         received.clear();
         maxEpochSeen.clear();
         failNext.set(0);
+        rateLimitNext.set(0);
+        rateLimitRetryAfterSeconds.set(0);
+        latencyMillis.set(0);
     }
 }

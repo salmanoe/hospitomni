@@ -35,4 +35,11 @@ public interface DirtyCellStore {
      */
     void recordFailure(PropertyChannelId channelId, String error,
                        long backoffBaseSeconds, int maxAttempts);
+
+    /**
+     * After a rate-limited push: defer the channel's due cells by the OTA's
+     * retry-after WITHOUT bumping attempts — throttling is normal operation,
+     * never a step toward the dead letter.
+     */
+    void recordRateLimited(PropertyChannelId channelId, long retryAfterSeconds);
 }

@@ -11,6 +11,7 @@
 package id.co.hospitomni.channel.application;
 
 import id.co.hospitomni.channel.domain.port.out.DirtyCellStore;
+import id.co.hospitomni.channel.domain.port.out.OtaRateLimitException;
 import id.co.hospitomni.channel.domain.port.out.PropertyChannelRepository;
 import id.co.hospitomni.shared.PropertyChannelId;
 import org.slf4j.Logger;
@@ -69,6 +70,12 @@ public class AriOutboxRelay {
     private void relayChannel(PropertyChannelId channelId) {
         try {
             worker.processChannel(channelId);
+        } catch (OtaRateLimitException e) {
+            // Throttling is normal operation: defer without an attempt, and
+            // keep last_push_error clean — nothing is wrong with the channel.
+            log.debug("Rate limited on channel {} — deferring {}s",
+                    channelId.value(), e.retryAfterSeconds());
+            dirtyCellStore.recordRateLimited(channelId, e.retryAfterSeconds());
         } catch (Exception e) {
             log.warn("Push failed for channel {}: {}", channelId.value(), e.getMessage());
             String error = e.getMessage() == null ? e.toString() : e.getMessage();
