@@ -48,6 +48,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 "hospitomni.relay.fixed-delay=PT0.5S",
                 "hospitomni.relay.backoff-base-seconds=1",
                 "hospitomni.relay.max-attempts=1",
+                // The webhook-health check is exercised against a local URL.
+                "hospitomni.webhook.require-https=false",
         })
 @AutoConfigureTestRestTemplate
 @ActiveProfiles("local")
@@ -69,18 +71,34 @@ class DoctorIntegrationTest {
     }
 
     @Test
-    void healthySyncedPropertyPassesWithExitZero() {
+    void healthySyncedMappedReconciledPropertyPassesWithExitZero() {
         Content content = seedContentAndChannel("Doctor Healthy Hotel");
         seedAvailability(content, "2027-09-01", "2027-09-05", 4);
         awaitChannelSettled(content.propertyId(), status ->
                 status.path("pending_cells").asLong() == 0
                         && !status.path("last_push_at").isNull());
 
+        // Full health: unit mappings declared, one drift-free reconciliation.
+        String channelId = getOk("/api/v1/property-channels?property_id=" + content.propertyId())
+                .get(0).path("id").asString();
+        ResponseEntity<String> mapped = rest.exchange("/api/v1/mappings", HttpMethod.PUT,
+                entity("""
+                        {"property_channel_id":"%s","property_code":"OTA-DOC-1",
+                         "room_types":[{"id":"%s","ota_code":"OTA-DOC-RT-1"}],
+                         "rate_plans":[{"id":"%s","ota_code":"OTA-DOC-RP-1"}]}"""
+                        .formatted(channelId, content.roomTypeId(), content.ratePlanId())),
+                String.class);
+        assertEquals(HttpStatus.OK, mapped.getStatusCode(), String.valueOf(mapped.getBody()));
+        postOk("/api/v1/reconciliations", """
+                {"property_channel_id":"%s","date_from":"2027-09-01","date_to":"2027-09-05"}"""
+                .formatted(channelId));
+
         DoctorRun run = doctor("--property-id=" + content.propertyId());
         assertEquals(0, run.exitCode(), run.output());
         assertTrue(run.output().contains("[PASS] api-key"), run.output());
-        assertTrue(run.output().contains("[PASS] mappings"), run.output());
+        assertTrue(run.output().contains("room types mapped"), run.output());
         assertTrue(run.output().contains("in sync"), run.output());
+        assertTrue(run.output().contains("drift-free"), run.output());
         assertTrue(run.output().contains("0 failed"), run.output());
     }
 
@@ -108,6 +126,44 @@ class DoctorIntegrationTest {
         DoctorRun run = doctor("--property-id=" + propertyId);
         assertEquals(1, run.exitCode(), run.output());
         assertTrue(run.output().contains("no OTA channel mapped"), run.output());
+    }
+
+    @Test
+    void incompleteSetupWarnsButExitsZero() {
+        Content content = seedContentAndChannel("Doctor Warning Hotel");
+
+        // Channel connected but no unit mappings and never reconciled: the
+        // doctor points at both without failing the checkup.
+        DoctorRun run = doctor("--property-id=" + content.propertyId());
+        assertEquals(0, run.exitCode(), run.output());
+        assertTrue(run.output().contains("no OTA listing code"), run.output());
+        assertTrue(run.output().contains("never reconciled"), run.output());
+        assertTrue(run.output().contains("0 failed"), run.output());
+    }
+
+    @Test
+    void pausedWebhookWarns() {
+        // Scope the run to a fresh healthy property — the webhooks check is
+        // account-wide either way, and other tests seed broken properties.
+        Content content = seedContentAndChannel("Doctor Webhook Hotel");
+        JsonNode registered = postCreated("/api/v1/webhooks", """
+                {"url":"http://127.0.0.1:9/doctor-hook"}""");
+        String webhookId = registered.path("id").asString();
+        try {
+            ResponseEntity<String> paused = rest.exchange(
+                    "/api/v1/webhooks/" + webhookId, HttpMethod.PATCH,
+                    entity("""
+                            {"active":false}"""), String.class);
+            assertEquals(HttpStatus.OK, paused.getStatusCode(), String.valueOf(paused.getBody()));
+
+            DoctorRun run = doctor("--property-id=" + content.propertyId());
+            assertEquals(0, run.exitCode(), run.output());
+            assertTrue(run.output().contains("[WARN] webhooks"), run.output());
+            assertTrue(run.output().contains("paused"), run.output());
+        } finally {
+            rest.exchange("/api/v1/webhooks/" + webhookId, HttpMethod.DELETE,
+                    entity(null), String.class);
+        }
     }
 
     @Test
@@ -204,9 +260,9 @@ class DoctorIntegrationTest {
     private HttpEntity<String> entity(String json) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(ApiKeyAuthFilter.API_KEY_HEADER, DevDataSeeder.DEV_RAW_KEY);
+        headers.set(IdempotencyFilter.IDEMPOTENCY_KEY_HEADER, UUID.randomUUID().toString());
         if (json != null) {
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set(IdempotencyFilter.IDEMPOTENCY_KEY_HEADER, UUID.randomUUID().toString());
         }
         return new HttpEntity<>(json, headers);
     }

@@ -3,17 +3,21 @@
  * and reports one PASS/WARN/FAIL line per check:
  *
  *   api-key      key accepted, API reachable
- *   mappings     properties have OTA channel mappings
+ *   mappings     properties have OTA channel mappings, and each channel has
+ *                its unit-level identity set (listing code + room types)
  *   ari          availability/restrictions readback responds (value-level
  *                equality against the PMS is the PMS-side doctor's job)
  *   events       booking-events stream reachable; reports the tip cursor
  *   sync-status  per-channel push health: dead letters, push errors,
  *                stale backlog (drift), paused channels
+ *   reconcile    per-channel drift-correction outcome: never reconciled or
+ *                drift found → warn (the reconciler self-heals)
+ *   webhooks     delivery health of registered webhook endpoints
  *
  * Exit code: 0 healthy (warnings allowed), 1 any check failed, 2 bad usage.
  *
  * @author Salman
- * @version 1.0
+ * @version 1.1
  * @since 2026-07-05
  */
 package id.co.hospitomni.doctor;
@@ -118,6 +122,7 @@ public final class Doctor {
             checkAri(properties);
             checkEvents();
             checkSyncStatus();
+            checkWebhooks();
         } catch (Abort abort) {
             fail(abort.check, abort.getMessage());
         }
@@ -152,14 +157,38 @@ public final class Doctor {
             JsonNode channels = getData("mappings", "/api/v1/property-channels?property_id=" + id);
             if (channels.isEmpty()) {
                 fail("mappings", describe(property) + ": no OTA channel mapped");
-            } else {
-                List<String> names = new ArrayList<>();
-                for (JsonNode channel : channels) {
-                    names.add(channel.path("ota_name").asString()
-                            + (channel.path("paused").asBoolean() ? " (paused)" : ""));
-                }
-                pass("mappings", describe(property) + ": " + String.join(", ", names));
+                continue;
             }
+            List<String> names = new ArrayList<>();
+            for (JsonNode channel : channels) {
+                names.add(channel.path("ota_name").asString()
+                        + (channel.path("paused").asBoolean() ? " (paused)" : ""));
+            }
+            pass("mappings", describe(property) + ": " + String.join(", ", names));
+            int totalRoomTypes =
+                    getData("mappings", "/api/v1/room-types?property_id=" + id).size();
+            for (JsonNode channel : channels) {
+                checkUnitMappings(property, channel, totalRoomTypes);
+            }
+        }
+    }
+
+    /** Unit-level identity: without listing codes, real pushes are unaddressable. */
+    private void checkUnitMappings(JsonNode property, JsonNode channel, int totalRoomTypes) {
+        String label = describe(property) + " → " + channel.path("ota_name").asString();
+        JsonNode mappings = getData("mappings",
+                "/api/v1/mappings?property_channel_id=" + channel.path("id").asString());
+        if (mappings.path("property_code").isNull()) {
+            warn("mappings", label + ": no OTA listing code yet (PUT /mappings)");
+            return;
+        }
+        int mapped = mappings.path("room_types").size();
+        if (mapped < totalRoomTypes) {
+            warn("mappings", label + ": only " + mapped + "/" + totalRoomTypes
+                    + " room types mapped to OTA codes");
+        } else {
+            pass("mappings", label + ": listing code set, "
+                    + mapped + "/" + totalRoomTypes + " room types mapped");
         }
     }
 
@@ -224,6 +253,47 @@ public final class Doctor {
                         + " cell(s) in flight, last push " + lastPush);
             } else {
                 pass("sync-status", label + ": in sync, last push " + lastPush);
+            }
+            checkReconciliation(channel, label);
+        }
+    }
+
+    /** Drift correction is self-healing, so its findings warn rather than fail. */
+    private void checkReconciliation(JsonNode channel, String label) {
+        JsonNode reconciledAt = channel.path("last_reconciled_at");
+        if (reconciledAt.isNull() || reconciledAt.isMissingNode()) {
+            warn("reconcile", label + ": never reconciled — drift on the OTA would go unseen");
+            return;
+        }
+        int drift = channel.path("last_drift_count").asInt();
+        if (drift > 0) {
+            warn("reconcile", label + ": " + drift + " drifted night(s) at last run "
+                    + reconciledAt.asString() + " — full refresh was fenced in");
+        } else {
+            pass("reconcile", label + ": drift-free at " + reconciledAt.asString());
+        }
+    }
+
+    private void checkWebhooks() {
+        JsonNode hooks = getData("webhooks", "/api/v1/webhooks");
+        if (hooks.isEmpty()) {
+            pass("webhooks", "no webhook subscriptions — consumers poll /booking-events");
+            return;
+        }
+        for (JsonNode hook : hooks) {
+            String label = hook.path("url").asString();
+            long pending = hook.path("pending_events").asLong();
+            int failures = hook.path("consecutive_failures").asInt();
+            if (!hook.path("active").asBoolean()) {
+                warn("webhooks", label + ": paused, " + pending + " event(s) waiting");
+            } else if (failures > 0) {
+                warn("webhooks", label + ": " + failures + " consecutive failure(s) — "
+                        + hook.path("last_error").asString() + ", " + pending + " pending"
+                        + " (polling backstop still covers them)");
+            } else {
+                pass("webhooks", label + ": delivered through seq "
+                        + hook.path("last_delivered_seq").asLong()
+                        + (pending > 0 ? ", " + pending + " in flight" : ""));
             }
         }
     }
